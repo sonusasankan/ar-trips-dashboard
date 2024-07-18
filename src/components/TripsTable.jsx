@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { useTripContext } from '../context/TripContext';
 import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel, Button, Box, TablePagination, Checkbox } from '@mui/material';
 import { styled } from '@mui/system';
+import { format } from 'date-fns';
+
+//Forms
 import TripForm from '../components/TripForm';
+import UpdateForm from '../components/UpdateForm';
 
 const useStyles = {
     table: {
@@ -26,7 +30,7 @@ const TableHeader = styled(Box)({
 
 const TripsTable = () => {
     const classes = useStyles;
-    const { trips, selectTrip, deselectTrip, selectedTrips } = useTripContext();
+    const { trips, selectTrip, deselectTrip, selectedTrip } = useTripContext();
     const [orderDirection, setOrderDirection] = useState('asc');
     const [orderBy, setOrderBy] = useState('');
     const [page, setPage] = useState(0);
@@ -76,10 +80,13 @@ const TripsTable = () => {
         return timeTaken <= trip.etaDays ? 'On-time' : 'Delayed';
     };
 
-    const handleAddTrip = (tripData) => {
-        // Implement the logic to add the trip to your data store or API
-        console.log('New trip data:', tripData);
-    };
+    const calculateETA = (trip) => {
+      const etaDays = trip.etaDays;
+      const created = new Date(trip.createdAt);
+      const etaDate = new Date(created);
+      etaDate.setDate(created.getDate() + etaDays);
+      return format(etaDate, 'MM/dd/yy, hh:mm a');
+  };
 
     const handleCheckboxChange = (event, trip) => {
         if (event.target.checked) {
@@ -95,10 +102,10 @@ const TripsTable = () => {
             <TableHeader>
                 <Typography variant="h6">Trip List</Typography>
                 <Box>
-                <Button onClick={() => handleOpenModal('UPDATE')} variant="contained" color="primary" style={{ marginRight: '10px' }}>
+                <Button disabled={!selectedTrip} onClick={() => handleOpenModal('UPDATE')} variant="outlined" color="primary" style={{ marginRight: '10px' }}>
                     Update Status
                 </Button>
-                <Button onClick={() => handleOpenModal('ADD')} variant="contained" color="secondary">
+                <Button onClick={() => handleOpenModal('ADD')} variant="contained" color="primary">
                     Add Trip
                 </Button>
                 </Box>
@@ -106,6 +113,8 @@ const TripsTable = () => {
         <Table className={classes.table}>
           <TableHead>
             <TableRow>
+            <TableCell padding="checkbox">
+            </TableCell>
               {['Trip Id', 'Transporter', 'Source', 'Destination', 'Phone', 'ETA', 'Distance Remaining', 'Trip Status', 'TAT Status'].map((headCell) => (
                 <TableCell key={headCell}>
                   <TableSortLabel
@@ -121,13 +130,20 @@ const TripsTable = () => {
           </TableHead>
           <TableBody>
             {currentRows.map((trip) => (
-              <TableRow key={trip.tripId}>
+              <TableRow key={trip.tripId} selected={selectedTrip && selectedTrip.tripId === trip.tripId}>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    checked={selectedTrip && selectedTrip.tripId === trip.tripId}
+                    onChange={(event) => handleCheckboxChange(event, trip)}
+                    inputProps={{ 'aria-label': `select trip ${trip.tripId}` }}
+                  />
+                </TableCell>
                 <TableCell>{trip.tripId}</TableCell>
                 <TableCell>{trip.transporter}</TableCell>
                 <TableCell>{trip.source}</TableCell>
                 <TableCell>{trip.dest}</TableCell>
                 <TableCell>{trip.phoneNumber}</TableCell>
-                <TableCell>{trip.etaDays}</TableCell>
+                <TableCell>{calculateETA(trip)}</TableCell>
                 <TableCell>{trip.distanceRemaining}</TableCell>
                 <TableCell>{trip.currenStatus}</TableCell>
                 <TableCell>{calculateTATStatus(trip)}</TableCell>
@@ -145,12 +161,16 @@ const TripsTable = () => {
       onRowsPerPageChange={handleChangeRowsPerPage}
       rowsPerPageOptions={[5, 10, 25]}
     />
+    {formType === 'ADD' ?
     <TripForm
-        type={formType}
         open={openModal}
         handleClose={handleCloseModal}
-        handleAddTrip={handleAddTrip}
-      />
+      />:
+    <UpdateForm
+      open={openModal}
+      handleClose={handleCloseModal}
+    />
+    }
     </>
     );
 };

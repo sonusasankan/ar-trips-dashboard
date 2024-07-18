@@ -29,6 +29,7 @@ const tripReducer = (state, action) => {
 export const TripProvider = ({ children }) => {
   const [trips, dispatch] = useReducer(tripReducer, []);
   const [totals, setTotals] = useState({ total: 0, delivered: 0, onTimePercentage: 0, delayed: 0, inTransit: 0 });
+  const [selectedTrip, setSelectedTrip] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,8 +80,16 @@ export const TripProvider = ({ children }) => {
     dispatch({ type: UPDATE_TRIP, payload: trip });
   };
 
+  const selectTrip = (trip) => {
+    setSelectedTrip(trip);
+  };
+
+  const deselectTrip = () => {
+    setSelectedTrip(null);
+  };
+
   return (
-    <TripContext.Provider value={{ trips, totals, addTrip, updateTrip  }}>
+    <TripContext.Provider value={{ trips, totals, selectedTrip, addTrip, updateTrip, selectTrip, deselectTrip }}>
       {children}
     </TripContext.Provider>
   );

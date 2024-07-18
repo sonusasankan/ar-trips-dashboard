@@ -5,6 +5,8 @@ import { styled } from '@mui/system';
 import Link from 'next/link';
 import "./globals.css";
 
+import Image from 'next/image'
+
 const StyledAppBar = styled(AppBar)({
   marginBottom: '20px',
   backgroundColor: '#fff',
@@ -29,7 +31,12 @@ const Layout = ({ children }) => {
           <StyledToolbar>
             <Typography variant="h6">
               <Link href="/" passHref>
-                <Button color="inherit">AERCHAIN</Button>
+              <Image
+                  src="/logo.png"
+                  width={100} 
+                  height={18}
+                  alt="logo"
+                />
               </Link>
             </Typography>
             <div>

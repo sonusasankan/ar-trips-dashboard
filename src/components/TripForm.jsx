@@ -2,8 +2,6 @@ import { useState } from "react";
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box } from '@mui/material';
 import { useTripContext } from '../context/TripContext';
 
-import UpdateForm from './UpdateForm';
-
 const TripForm = ({ type, open, handleClose }) => {
   const { addTrip } = useTripContext();
   const [formData, setFormData] = useState({
@@ -79,7 +77,6 @@ const TripForm = ({ type, open, handleClose }) => {
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>{ type === 'ADD' ? 'Add New Trip' : 'Update Trip'}</DialogTitle>
       <DialogContent>
-        {type === 'ADD' ?  
         <Box component="form" sx={{ '& .MuiTextField-root': { m: 1, width: '25ch' } }}>
         <TextField
           name="tripId"
@@ -149,13 +146,10 @@ const TripForm = ({ type, open, handleClose }) => {
           helperText={errors.etaDays}
         />
       </Box>
-        : 
-        <UpdateForm/>
-        }
       </DialogContent>
       <DialogActions>
         <Button onClick={handleModalClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary">{ type === 'ADD' ? 'Add Trip' : 'Update'}</Button>
+        <Button onClick={handleSubmit} variant="contained" color="primary">Add Trip</Button>
       </DialogActions>
     </Dialog>
   );

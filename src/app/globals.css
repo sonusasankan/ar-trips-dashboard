@@ -29,3 +29,7 @@ a {
     color-scheme: dark;
   }
 }
+
+.MuiContainer-root{
+  max-width: 100%;
+}

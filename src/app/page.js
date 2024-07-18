@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useTripContext } from '../context/TripContext';
 import { Box, Container, Typography, Grid, Card, CardContent, CircularProgress } from '@mui/material';
 import { styled } from '@mui/system';
-import styles from "./page.module.css";
 
 //Table
 import TripsTable from '../components/TripsTable';
@@ -19,7 +18,7 @@ export default function Home() {
   const { trips, totals } = useTripContext();
 
   return (
-      <StyledContainer >
+      <StyledContainer>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6} md={3}>
             <Card>
@@ -45,7 +44,7 @@ export default function Home() {
                     >
                       <CircularProgress
                         variant="determinate"
-                        value={80}
+                        value={totals.onTimePercentage}
                         size={50}
                         thickness={4}
                       />
