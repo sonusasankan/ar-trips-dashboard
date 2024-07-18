@@ -1,132 +1,83 @@
 'use client';
 import { useState, useEffect } from "react";
 import { useTripContext } from '../context/TripContext';
-import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel, Button, Box, TablePagination, Checkbox } from '@mui/material';
+import { Box, Container, Typography, Grid, Card, CardContent, CircularProgress } from '@mui/material';
 import { styled } from '@mui/system';
 import styles from "./page.module.css";
 
-const useStyles = {
-  table: {
-    minWidth: 650,
-  },
-  card: {
-    margin: '10px 0',
-  },
-  toolbar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-  }
-};
+//Table
+import TripsTable from '../components/TripsTable';
 
-const TableHeader = styled(Box)({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: '16px',
+
+const StyledContainer = styled(Container)({
+  maxWidth: '100% !important',
+  width: '100%',
+  backgroundColor: 'transparent'
 });
 
 export default function Home() {
-  const classes = useStyles;
-  const { trips } = useTripContext();
-  const [orderDirection, setOrderDirection] = useState('asc');
-  const [orderBy, setOrderBy] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-
-  const handleSortRequest = (property) => {
-    const isAsc = orderBy === property && orderDirection === 'asc';
-    setOrderDirection(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-};
-
-const sortedTrips = trips.slice().sort((a, b) => {
-    if (orderBy) {
-      if (a[orderBy] < b[orderBy]) return orderDirection === 'asc' ? -1 : 1;
-      if (a[orderBy] > b[orderBy]) return orderDirection === 'asc' ? 1 : -1;
-      return 0;
-    }
-    return trips;
-});
-
-const currentRows = sortedTrips.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-
-const calculateTATStatus = (trip) => {
-    const tripEndTime = trip.tripEndTime ? new Date(trip.tripEndTime) : new Date(trip.lastPingTime);
-    const tripStartTime = new Date(trip.tripStartTime);
-    const timeTaken = (tripEndTime - tripStartTime) / (1000 * 60 * 60 * 24);
-    if( tripEndTime <= 0) {
-      return 'Others';
-    }
-    return timeTaken <= trip.etaDays ? 'On-time' : 'Delayed';
-};
-
-const handleChangePage = (event, newPage) => {
-  setPage(newPage);
-};
-
-const handleChangeRowsPerPage = (event) => {
-  setRowsPerPage(parseInt(event.target.value, 10));
-  setPage(0);
-};
+  const { trips, totals } = useTripContext();
 
   return (
-    <main className={styles.main}>
-      <TableContainer component={Paper}>
-            <TableHeader>
-                <Typography variant="h6">Trip List</Typography>
-                <Box>
-                <Button variant="contained" color="primary" style={{ marginRight: '10px' }}>
-                    Update Status
-                </Button>
-                <Button variant="contained" color="secondary">
-                    Add Trip
-                </Button>
-                </Box>
-            </TableHeader>
-        <Table className={classes.table}>
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-              </TableCell>
-              {['Trip Id', 'Transporter', 'Source', 'Destination', 'Phone', 'ETA', 'Distance Remaining', 'Trip Status', 'TAT Status'].map((headCell) => (
-                <TableCell key={headCell}>
-                  <TableSortLabel
-                    active={orderBy === headCell}
-                    direction={orderBy === headCell ? orderDirection : 'asc'}
-                    onClick={() => handleSortRequest(headCell)}
-                  >
-                    {headCell.charAt(0).toUpperCase() + headCell.slice(1)}
-                  </TableSortLabel>
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {currentRows.map((trip) => (
-              <TableRow key={trip.tripId}>
-                <TableCell>{trip.tripId}</TableCell>
-                <TableCell>{trip.transporter}</TableCell>
-                <TableCell>{trip.source}</TableCell>
-                <TableCell>{trip.dest}</TableCell>
-                <TableCell>{trip.phoneNumber}</TableCell>
-                <TableCell>{trip.etaDays}</TableCell>
-                <TableCell>{trip.distanceRemaining}</TableCell>
-                <TableCell>{trip.currenStatus}</TableCell>
-                <TableCell>{calculateTATStatus(trip)}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-      component="div"
-      count={sortedTrips.length}
-      page={page}
-      onPageChange={handleChangePage}
-      rowsPerPage={rowsPerPage}
-      onRowsPerPageChange={handleChangeRowsPerPage}
-      rowsPerPageOptions={[5, 10, 25]}
-    />
-    </main>
+      <StyledContainer >
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Typography>Total Trips</Typography>
+                <Typography variant="h5">{totals.total}</Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Grid container spacing={2}>
+                  <Grid item xs={5}>
+                    <Typography variant="subtitle1">Delivered</Typography>
+                    <Typography variant="h5">{totals.delivered}</Typography>
+                  </Grid>
+                  <Grid item xs={7}>
+                    <Box
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
+                      <CircularProgress
+                        variant="determinate"
+                        value={80}
+                        size={50}
+                        thickness={4}
+                      />
+                    </Box>
+                    <p>On time: {totals.onTimePercentage}%</p>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={6}>
+            <Card>
+              <CardContent>
+                <Grid container spacing={2}>
+                  <Grid item md={4}>
+                    <Typography>Delayed</Typography>
+                    <Typography variant="h5">{totals.delayed}</Typography>
+                  </Grid>
+                  <Grid item md={4}>
+                    <Typography>In Transit</Typography>
+                    <Typography variant="h5">{totals.inTransit}</Typography>
+                  </Grid>
+                  <Grid item md={4}>
+                    <Typography>Delivered</Typography>
+                    <Typography variant="h5">{totals.inTransit}</Typography>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+        <TripsTable/>
+    </StyledContainer>
   );
 }

@@ -8,12 +8,18 @@ export const useTripContext = () => useContext(TripContext);
 
 // Action types
 const INIT_TRIPS = 'INIT_TRIPS';
+const ADD_TRIP = 'ADD_TRIP';
+const UPDATE_TRIP = 'UPDATE_TRIP';
 
 // Reducer function
 const tripReducer = (state, action) => {
   switch (action.type) {
     case INIT_TRIPS:
       return action.payload;
+    case ADD_TRIP:
+      return [action.payload, ...state];
+    case UPDATE_TRIP:
+      return state.map(trip => trip.tripId === action.payload.tripId ? action.payload : trip);
     default:
       return state;
   }
@@ -52,7 +58,7 @@ export const TripProvider = ({ children }) => {
   const calculateTotals = (trips) => {
     const total = trips.length;
     const delivered = trips.filter(trip => trip.currentStatusCode === "DEL").length;
-    const inTransit = trips.filter(trip => trip.currentStatusCode === "TRANSIT").length;
+    const inTransit = trips.filter(trip => trip.currentStatusCode === "INT").length;
     const delayed = trips.filter(trip => {
       const tripEndTime = trip.tripEndTime ? new Date(trip.tripEndTime) : new Date(trip.lastPingTime);
       const tripStartTime = new Date(trip.tripStartTime);
@@ -65,8 +71,16 @@ export const TripProvider = ({ children }) => {
     setTotals({ total, delivered, onTimePercentage, delayed, inTransit });
   };
 
+  const addTrip = (trip) => {
+    dispatch({ type: ADD_TRIP, payload: trip });
+  };
+
+  const updateTrip = (trip) => {
+    dispatch({ type: UPDATE_TRIP, payload: trip });
+  };
+
   return (
-    <TripContext.Provider value={{ trips, totals }}>
+    <TripContext.Provider value={{ trips, totals, addTrip, updateTrip  }}>
       {children}
     </TripContext.Provider>
   );
