@@ -59,15 +59,26 @@ export const TripProvider = ({ children }) => {
   const calculateTotals = (trips) => {
     const total = trips.length;
     const delivered = trips.filter(trip => trip.currentStatusCode === "DEL").length;
+    const deliveredTrips = trips.filter(trip => trip.currentStatusCode === "DEL");
     const inTransit = trips.filter(trip => trip.currentStatusCode === "INT").length;
     const delayed = trips.filter(trip => {
-      const tripEndTime = trip.tripEndTime ? new Date(trip.tripEndTime) : new Date(trip.lastPingTime);
-      const tripStartTime = new Date(trip.tripStartTime);
-      const timeTaken = (tripEndTime - tripStartTime) / (1000 * 60 * 60 * 24);
-      return timeTaken > trip.etaDays;
+      if(trip.etaDays){
+        const tripEndTime = trip.tripEndTime ? new Date(trip.tripEndTime) : new Date(trip.lastPingTime);
+        const tripStartTime = new Date(trip.tripStartTime);
+        const timeTaken = (tripEndTime - tripStartTime) / (1000 * 60 * 60 * 24);
+        return timeTaken > trip.etaDays;
+      }
     }).length;
-    const onTime = delivered - delayed;
-    const onTimePercentage = delivered ? ((onTime / delivered) * 100).toFixed(2) : 0;
+    const delayDelivery = deliveredTrips.filter(trip => {
+      if(trip.etaDays){
+        const tripEndTime = trip.tripEndTime ? new Date(trip.tripEndTime) : new Date(trip.lastPingTime);
+        const tripStartTime = new Date(trip.tripStartTime);
+        const timeTaken = (tripEndTime - tripStartTime) / (1000 * 60 * 60 * 24);
+        return timeTaken > trip.etaDays;
+      }
+    }).length;
+    const onTime = delivered - delayDelivery;
+    const onTimePercentage = delivered ? (( onTime / delivered) * 100).toFixed(2) : 0;
 
     setTotals({ total, delivered, onTimePercentage, delayed, inTransit });
   };

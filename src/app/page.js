@@ -69,7 +69,7 @@ export default function Home() {
                   </Grid>
                   <Grid item md={4}>
                     <Typography>Delivered</Typography>
-                    <Typography variant="h5">{totals.inTransit}</Typography>
+                    <Typography variant="h5">{totals.delivered}</Typography>
                   </Grid>
                 </Grid>
               </CardContent>
